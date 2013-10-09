@@ -5,14 +5,14 @@
     <link href="/maps/documentation/javascript/examples/default.css" rel="stylesheet">
     <script src="https://maps.googleapis.com/maps/api/js?v=3.exp&sensor=false"></script>
     <style> 
-	body { background-color: #CCC; align: center }
+	body { background:#fff;}
      #map-canvas
 	{
 	position:absolute;
     	width:800px;
         height:600px;
         z-index:15;
-        top:75%;
+        top:85%;
         left:50%;
         margin:-400px 0 0 -400px;
 	}
@@ -66,7 +66,9 @@
 				var marker = new google.maps.Marker({
 				position: places[i],
 				map: map,
+				animation: google.maps.Animation.BOUNCE,
 				title: 'Location ' + i
+				
 				});
 			
 				
@@ -90,7 +92,8 @@
 					position: people[i],
 					map: map,
 					title: 'Person ' + i,
-					icon: 'images/male-2.png'
+					icon: 'person.gif',
+					animation: google.maps.Animation.DROP
 					});
 									}
 		}
@@ -99,8 +102,9 @@
     </script>
   </head>
   <body>
-    <div align = "center"> <p> <h1> What's Happening at SJSU! </h1> </p> </div>
-    <marquee behavior="scroll" direction="left">Welcome Student! Top Notifications for the Day: *Code Camp 2013 is here! regsiter now!!! * Bike@SJSU is a new bike service opened up near the Engg Building * </marquee>
+	<img src="sjsu-logo-select.gif" align= "left" alt="Logo" width="100" height="100">
+    <div style="color:#00248F"; align = "center"> <p> <h1> What's Happening at SJSU! </h1> </p> </div>
+    <marquee style="color:#00248F" behavior="scroll" direction="left">Welcome Student! Top Notifications for the Day: *Code Camp 2013 is here! Register now!!! * Bike@SJSU is a new bike service opened up near the Engg Building * </marquee>
     <div id="map-canvas"></div>
     
   </body>
