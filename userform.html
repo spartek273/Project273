@@ -6,19 +6,55 @@
 <h1> User Sign-Up Form 
 </h1>
 
-<form>
+<div id="Registration-Page" class="signup-form">
+<form id="signupForm" action="" method="post>
 <p></p>
 First name: <input type="text" name="Firstname"><br>
 Last name: <input type="text" name="Lastname"><br>
-SJSU ID:&nbsp; <input type="text"
-name="SJSU ID"><br>
+SJSU ID:&nbsp; <input type="text"name="SJSU ID"><br>
 Password: <input type="password" name="pwd"><br>
 Gender: <input type="radio" name="sex" value="male">Male
 <input type="radio" name="sex" value="female">Female<br>
 E-mail: &nbsp; &nbsp; &nbsp; <input type="email" name="email"><br>
 Phone Number: <input type="text" name="phone number"><br>
-<button type="button">Submit</button> 
+<p><input type="submit" /></p>
 </form> 
+<h2>JSON</h2>
+<pre id="result">
+</pre>
+</div>
+
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js">
+</script>
+
+<script type="text/javascript">	
+	$.fn.serializeObject = function()
+	{
+    var o = {};
+    var a = this.serializeArray();
+    $.each(a, function() {
+        if (o[this.name] !== undefined) {
+            if (!o[this.name].push) {
+                o[this.name] = [o[this.name]];
+            }
+            o[this.name].push(this.value || '');
+        } else {
+            o[this.name] = this.value || '';
+        }
+    });
+    return o;
+	};
+
+	$(function() {
+    $('form').Submit(function() {
+        $('#result').text(JSON.stringify($('form').serializeObject()));
+		return false;
+    });
+	});
+	  
+
+  </script>
+
 
 </body>
 </html>
