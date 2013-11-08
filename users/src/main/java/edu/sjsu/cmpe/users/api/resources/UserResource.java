@@ -1,8 +1,9 @@
 package edu.sjsu.cmpe.users.api.resources;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
-
-
-import java.util.HashMap;
 import javax.ws.rs.Consumes;
 //import javax.ws.rs.DELETE;
 //import javax.ws.rs.GET;
@@ -12,21 +13,16 @@ import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 //import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-
-
-
-
-
-
-
-//import com.sun.jersey.core.header.reader.HttpHeaderReader.Event;
-import com.google.common.base.Optional;
+import com.mongodb.BasicDBObject;
+import com.mongodb.DBCollection;
+import com.mongodb.DBCursor;
 //import com.yammer.dropwizard.jersey.params.IntParam;
 import com.yammer.metrics.annotation.Timed;
 
+import edu.sjsu.cmpe.mongo.config.MongoConfig;
+import edu.sjsu.cmpe.users.dao.MongoDao;
 import edu.sjsu.cmpe.users.domain.UserDetails;
 import edu.sjsu.cmpe.users.domain.EventDetails;
 
@@ -35,10 +31,8 @@ import edu.sjsu.cmpe.users.domain.EventDetails;
 @Consumes(MediaType.APPLICATION_JSON)
 
 public class UserResource {
+	private int authenticated = 400;
 	
-	private static HashMap <Integer, UserDetails> userMap = new HashMap<Integer,UserDetails>();
-	private static HashMap <Integer, EventDetails> eventMap = new HashMap<Integer,EventDetails>();
-	private static HashMap <String, EventDetails> locMap = new HashMap <String, EventDetails>();
 	public UserResource()
 	{
 	}
@@ -48,13 +42,45 @@ public class UserResource {
 	@Timed(name="create-user")
 	@Produces(MediaType.APPLICATION_JSON)
 	@Consumes(MediaType.APPLICATION_JSON)
-	public Response user(UserDetails user)
+	public Response user(UserDetails user) throws FileNotFoundException, IOException
 	{
-		int num= userMap.size()+1;
-		user.setId(num);
-		userMap.put(num, user);		
-		//System.out.println(" " +user.getTime());
+		MongoConfig connection = new MongoConfig();
+		MongoDao client = new MongoDao();
+		client.getDBConnection(connection.dbHostName, connection.dbPortNumber);
+		client.getDB(connection.dbName);
+		client.getCollection("usercollection");
+		
+		BasicDBObject doc = new BasicDBObject("sjsuId", user.getSjsuId()).append("firstname", user.getFirstName()).append("lastname", user.getLastName()).append("email", user.getEmail()).append("password", user.getPassword());
+		client.insertData(doc);
+		client.closeConnection();
+
 		return Response.status(201).entity(user).build();
+	}
+	
+	@POST
+	@Path("/users/authenticate")
+	@Timed(name="authenticate-user")
+	public Response authenticateUser(UserDetails user) throws FileNotFoundException, IOException
+	{
+		MongoConfig connection = new MongoConfig();
+		MongoDao client = new MongoDao();
+		client.getDBConnection(connection.dbHostName, connection.dbPortNumber);
+		client.getDB(connection.dbName);
+		client.getCollection("userCollection");
+		
+		BasicDBObject authenticate = new BasicDBObject();
+		List <BasicDBObject> authList = new ArrayList <BasicDBObject>();
+		authList.add(new BasicDBObject("email", user.getEmail()));
+		authList.add(new BasicDBObject("password", user.getPassword()));
+		authenticate.put("$and", authList);
+		
+		DBCursor cursor = client.findData(authenticate);
+		while(cursor.hasNext())
+		{
+			System.out.println(cursor.hasNext());
+			authenticated =200;
+		}
+		return null;
 	}
 	
 	@POST
@@ -62,54 +88,51 @@ public class UserResource {
 	@Timed(name="create-event")
 	@Produces(MediaType.APPLICATION_JSON)
 	@Consumes(MediaType.APPLICATION_JSON)
-	public Response event(EventDetails event)
+	public Response event(EventDetails event) throws FileNotFoundException, IOException 
 	{
-		int num= eventMap.size()+1;
-		event.setId(num);
-		eventMap.put(num, event);	
-		locMap.put(event.getLatitude(), event);
+		MongoConfig connection = new MongoConfig();
+		MongoDao client = new MongoDao();
+		client.getDBConnection(connection.dbHostName, connection.dbPortNumber);
+		client.getDB(connection.dbName);
+		client.getCollection("eventcollection");
+		
+		BasicDBObject doc = new BasicDBObject("eventId", event.getEventId()).append("eventName", event.getEventName()).append("eventCategory", event.getEventCategory()).append("eventDescription", event.getEvenDescription()).append("eventDate", event.getEventDate()).append("eventTime", event.getEventTime());
+		
+		client.closeConnection();
+
 		return Response.status(201).entity(event).build();
 	}
-	
-	@GET
-	@Path("/users/location/")
-	@Timed(name="get-event-by-user-location")
-	@Produces(MediaType.APPLICATION_JSON)
-	@Consumes(MediaType.APPLICATION_JSON)
-	public String getEvent(@QueryParam("latitude") Optional <String> latitude)
-	{
-		String eventName = "";
-		
-		//EventDetails tempEvent= new EventDetails();
-		for(EventDetails iter: locMap.values())
-		{
-			if(iter.getLatitude()==latitude.get())
-			{
-				eventName=iter.getName();
-				System.out.println(""+eventName);
-			}
-		}
-		return eventName;
-	}	
 	
 	@GET
 	@Path("/users")
 	@Timed(name="get-all-users")
 	@Produces(MediaType.APPLICATION_JSON)
 	@Consumes(MediaType.APPLICATION_JSON)
-	public HashMap<Integer, UserDetails> getAllUsers()
+	public DBCollection getAllUsers() throws FileNotFoundException, IOException
 	{
-		return userMap;
+		MongoConfig connection = new MongoConfig();
+		MongoDao client = new MongoDao();
+		client.getDBConnection(connection.dbHostName, connection.dbPortNumber);
+		client.getDB(connection.dbName);
+		client.getCollection("userCollection");
+		
+		return client.getCollection("usercollection");
 	}
 	
 	@GET
 	@Path("/events")
-	@Timed(name="get-all-")
+	@Timed(name="get-all-events")
 	@Produces(MediaType.APPLICATION_JSON)
 	@Consumes(MediaType.APPLICATION_JSON)
-	public HashMap<Integer, EventDetails> getAllEvents()
+	public DBCollection getAllEvents() throws FileNotFoundException, IOException
 	{
-		return eventMap;
+		MongoConfig connection = new MongoConfig();
+		MongoDao client = new MongoDao();
+		client.getDBConnection(connection.dbHostName, connection.dbPortNumber);
+		client.getDB(connection.dbName);
+		client.getCollection("eventCollection");
+		
+		return client.getCollection("eventcollection");
 	}
 
 }

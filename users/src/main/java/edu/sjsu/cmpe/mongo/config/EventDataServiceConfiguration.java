@@ -1,5 +1,7 @@
 package edu.sjsu.cmpe.mongo.config;
 
-public class EventDataServiceConfiguration {
+import com.yammer.dropwizard.config.Configuration;
+
+public class EventDataServiceConfiguration extends Configuration{
 
 }
